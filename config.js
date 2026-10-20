@@ -1,0 +1,2 @@
+/* Configure com o conteúdo EXATO do QR autorizado. Códigos diferentes serão recusados. */
+window.INDUFAR_CONFIG={validCodes:["COLE_AQUI_O_CONTEUDO_EXATO_DO_QR_CODE_ORIGINAL"],product:{name:"T.G. 15 mg",strength:"Tirzepatida 15 mg/0,5 mL",codeLabel:"aPYYGu1ho4"}};
