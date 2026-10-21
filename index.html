@@ -1,629 +1,753 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
-<title>INDUFAR | Verificação de produto</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AuthNow - Autenticação de Produto</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-<style>
-:root {
-  --brown: #673519;
-  --gold: #a48a08;
-  --blue: #edf4f6;
-  --green: #16832d;
-  --text: #17191d;
-}
-* { box-sizing: border-box; }
+    body {
+      background-color: #121212;
+      color: #333;
+      overflow-x: hidden;
+    }
 
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  color: var(--text);
-  background: #fff;
-}
+    /* Gradient Background matching AuthNow */
+    .bg-authnow-gradient {
+      background: linear-gradient(180deg, #1d0f4d 0%, #2e1a68 40%, #391e83 100%);
+    }
 
-button, select { font: inherit; }
-button { cursor: pointer; }
+    /* Scanner Viewport Box */
+    .scanner-box {
+      position: relative;
+      border: 3px solid #22c55e;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    }
 
-.app {
-  width: 100%;
-  max-width: 740px;
-  min-height: 100vh;
-  margin: auto;
-  background: white;
-}
+    .laser-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #22c55e, transparent);
+      box-shadow: 0 0 15px #22c55e;
+      animation: scan 2s infinite ease-in-out;
+      z-index: 10;
+    }
 
-header {
-  background: white;
-  padding: 24px 22px 18px;
-}
+    @keyframes scan {
+      0% { top: 5%; opacity: 0.2; }
+      50% { top: 95%; opacity: 1; }
+      100% { top: 5%; opacity: 0.2; }
+    }
 
-.nav {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: center;
-  min-height: 80px;
-}
+    /* iOS Style Backdrop Blur */
+    .backdrop-ios {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
 
-.menu {
-  width: 66px;
-  height: 62px;
-  border: 0;
-  border-radius: 17px;
-  background: white;
-  box-shadow: 0 4px 12px #00000012;
-  font-size: 29px;
-  justify-self: start;
-}
+    /* Drawer Animation */
+    .drawer {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.logo {
-  width: 105px;
-  height: 77px;
-  object-fit: contain;
-  justify-self: center;
-}
+    .drawer-closed {
+      transform: translateX(-100%);
+    }
 
-.language {
-  justify-self: end;
-  border: 2px solid #252525;
-  border-radius: 30px;
-  padding: 13px 15px;
-  background: white;
-}
+    .drawer-open {
+      transform: translateX(0);
+    }
 
-.product-title {
-  text-align: center;
-  font-weight: 700;
-  font-size: 28px;
-  margin: 12px 0 24px;
-}
+    /* Pulse for scan instruction badge */
+    .pulse-badge {
+      animation: pulseText 1.5s infinite;
+    }
 
-.screen { display: none; }
-.screen.active { display: block; }
+    @keyframes pulseText {
+      0% { opacity: 0.8; }
+      50% { opacity: 1; transform: scale(1.02); }
+      100% { opacity: 0.8; }
+    }
 
-.auth-banner {
-  min-height: 122px;
-  padding: 18px 24px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e6eaec;
-}
-
-.shield {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: #164b9b;
-  color: white;
-  display: grid;
-  place-items: center;
-  font-size: 38px;
-  flex-shrink: 0;
-}
-
-.auth-text { flex: 1; min-width: 0; }
-
-.auth-label {
-  color: var(--green);
-  font-size: clamp(21px, 4.3vw, 36px);
-  line-height: 1.15;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.auth-code {
-  font-size: clamp(16px, 3.8vw, 28px);
-  line-height: 1.2;
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-
-.arrow {
-  font-size: 44px;
-  font-weight: 300;
-}
-
-.result-body {
-  background: var(--blue);
-  padding: 25px 30px 32px;
-}
-
-.product-image {
-  display: block;
-  width: 100%;
-  height: 650px;
-  max-height: 75vh;
-  object-fit: contain;
-  margin: 0 auto 20px;
-}
-
-.description {
-  font-size: 19px;
-  line-height: 1.5;
-  margin: 15px 0;
-}
-
-.dosage {
-  color: #5f6871;
-  font-size: 17px;
-  margin: 18px 0 48px;
-}
-
-.feature-icons {
-  display: flex;
-  justify-content: space-evenly;
-  gap: 30px;
-}
-
-.feature-icon {
-  height: 105px;
-  width: 105px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--gold);
-  color: white;
-  border: 4px solid white;
-  font-size: 44px;
-}
-
-.content {
-  padding: 28px 24px 36px;
-  background: var(--blue);
-  min-height: 70vh;
-}
-
-.card {
-  max-width: 560px;
-  margin: 0 auto;
-  background: white;
-  padding: 27px;
-  border-radius: 16px;
-  box-shadow: 0 5px 22px #152a3c0d;
-}
-
-h1 {
-  font-size: 27px;
-  line-height: 1.2;
-  margin: 0 0 13px;
-}
-
-h2 {
-  font-size: 22px;
-  margin-top: 0;
-}
-
-p {
-  line-height: 1.6;
-  color: #454d55;
-}
-
-.steps {
-  padding-left: 23px;
-  line-height: 1.8;
-  margin: 20px 0;
-}
-
-.consent {
-  display: flex;
-  gap: 10px;
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 22px 0;
-}
-
-.consent input {
-  width: 19px;
-  height: 19px;
-  flex-shrink: 0;
-  accent-color: var(--green);
-}
-
-.primary, .secondary {
-  display: block;
-  width: 100%;
-  padding: 16px;
-  border-radius: 10px;
-  font-weight: 700;
-  border: 0;
-  margin-top: 12px;
-}
-
-.primary {
-  color: white;
-  background: #188c36;
-}
-
-.primary:disabled {
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-.secondary {
-  background: white;
-  border: 1px solid #cbd3d9;
-  color: #333;
-}
-
-.scan-box {
-  width: 100%;
-  max-width: 390px;
-  aspect-ratio: 1;
-  background: #151515;
-  border-radius: 16px;
-  margin: 24px auto;
-  position: relative;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.scan-box video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.scan-outline {
-  position: absolute;
-  inset: 14%;
-  border: 3px solid #3ff2a0;
-  border-radius: 14px;
-  pointer-events: none;
-}
-
-.scan-help {
-  text-align: center;
-  color: white;
-  padding: 20px;
-}
-
-.file-input {
-  display: block;
-  width: 100%;
-  margin: 20px 0;
-  padding: 13px;
-  background: white;
-  border: 1px solid #ccd4d8;
-  border-radius: 9px;
-}
-
-.notice {
-  padding: 13px;
-  margin-top: 22px;
-  border-radius: 9px;
-  background: #fff4d5;
-  color: #6b5000;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-footer {
-  padding: 22px;
-  text-align: center;
-  color: #737b80;
-  font-size: 12px;
-}
-
-@media (max-width: 480px) {
-  header { padding: 14px 14px 12px; }
-  .nav { min-height: 70px; }
-  .menu { width: 58px; height: 56px; }
-  .logo { width: 90px; height: 68px; }
-  .product-title { font-size: 23px; margin-bottom: 22px; }
-  .auth-banner { padding: 16px 13px; gap: 10px; }
-  .shield { width: 58px; height: 58px; font-size: 31px; }
-  .result-body { padding: 20px 18px 30px; }
-  .product-image { height: 490px; }
-  .description { font-size: 16px; }
-  .feature-icon { width: 83px; height: 83px; font-size: 35px; }
-  .content { padding: 20px 14px 30px; }
-  .card { padding: 22px 18px; }
-}
-</style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4a3399;
+      border-radius: 4px;
+    }
+  </style>
 </head>
+<body class="flex justify-center items-center min-h-screen p-0 sm:p-4 bg-slate-900">
 
-<body>
-<main class="app">
+  <!-- Mobile Frame Container -->
+  <div class="relative w-full max-w-[430px] h-[100vh] sm:h-[880px] bg-black sm:rounded-[40px] shadow-2xl overflow-hidden flex flex-col border-0 sm:border-[8px] border-slate-800">
 
-<header>
-  <div class="nav">
-    <button class="menu" aria-label="Menu" id="menuButton">☰</button>
-
-    <img class="logo"
-         src="assets/indufar-logo.png"
-         alt="INDUFAR">
-
-    <select class="language" aria-label="Idioma">
-      <option>POR ⌃</option>
-      <option>ESP</option>
-      <option>ENG</option>
-    </select>
-  </div>
-
-  <div class="product-title">T.G. 15 mg</div>
-</header>
-
-<!-- TELA 1: ORIENTAÇÕES -->
-<section class="screen active" id="instructions">
-  <div class="content">
-    <div class="card">
-      <h1>Verificação de autenticidade</h1>
-      <p>
-        Confira o código QR da embalagem para consultar
-        as informações de identificação do produto.
-      </p>
-
-      <h2>Como funciona</h2>
-      <ol class="steps">
-        <li>Tenha o produto em mãos.</li>
-        <li>Localize o QR Code na embalagem.</li>
-        <li>Permita o acesso à câmera para escanear.</li>
-        <li>Confira as informações apresentadas.</li>
-      </ol>
-
-      <label class="consent">
-        <input type="checkbox" id="accept">
-        <span>Li as orientações e desejo continuar para a leitura do QR Code.</span>
-      </label>
-
-      <button class="primary" id="continueButton" disabled>
-        Continuar
-      </button>
+    <!-- Top Dev Controls (For previewing states) -->
+    <div class="bg-slate-950 text-white text-[11px] px-3 py-1.5 flex justify-between items-center z-50 border-b border-slate-800">
+      <span class="font-bold text-amber-400 flex items-center gap-1">
+        <i class="fa-solid fa-flask"></i> AuthNow Test
+      </span>
+      <div class="flex gap-2">
+        <button onclick="resetFlow()" class="bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-slate-300">
+          <i class="fa-solid fa-rotate-right"></i> Reiniciar
+        </button>
+        <button onclick="showAutenticoScreen()" class="bg-emerald-600 hover:bg-emerald-500 px-2 py-0.5 rounded text-white font-semibold">
+          <i class="fa-solid fa-circle-check"></i> Tela Autêntico
+        </button>
+      </div>
     </div>
-  </div>
-</section>
 
-<!-- TELA 2: LEITOR -->
-<section class="screen" id="scanner">
-  <div class="content">
-    <div class="card">
-      <h1>Escaneie o QR Code</h1>
-      <p>
-        Posicione o código dentro da moldura e mantenha
-        a câmera firme até a leitura.
-      </p>
+    <!-- Status Bar (Simulated Mobile Header) -->
+    <div class="bg-transparent text-white px-6 pt-3 pb-1 flex justify-between items-center text-xs font-semibold z-40 select-none">
+      <span id="current-time">18:28</span>
+      <div class="flex items-center space-x-1.5">
+        <i class="fa-solid fa-signal text-[10px]"></i>
+        <i class="fa-solid fa-wifi text-[10px]"></i>
+        <i class="fa-solid fa-battery-three-quarters text-sm"></i>
+      </div>
+    </div>
 
-      <div class="scan-box" id="scanBox">
-        <div class="scan-help" id="scanHelp">
-          <div style="font-size:48px">▦</div>
-          <strong>Leitura do código QR</strong>
-          <p style="color:#ddd">Ative a câmera para continuar.</p>
+    <!-- MAIN CONTAINER -->
+    <div class="relative flex-1 bg-authnow-gradient overflow-y-auto flex flex-col">
+
+      <!-- APP HEADER -->
+      <header id="app-header" class="px-5 py-3 flex items-center justify-between z-30">
+        <button onclick="toggleDrawer()" class="w-10 h-10 rounded-xl bg-white/10 backdrop-ios flex items-center justify-center text-white text-lg active:scale-95 transition">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-2">
+          <div class="w-12 h-12 bg-amber-800/80 rounded-full flex items-center justify-center border-2 border-amber-500/50 shadow-lg relative overflow-hidden">
+            <span class="text-amber-300 font-extrabold text-xl tracking-tighter italic">IF</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-amber-400 font-black text-sm tracking-wider uppercase leading-none">INDUFAR</span>
+            <span class="text-white/60 text-[9px] font-medium tracking-widest uppercase">CISA</span>
+          </div>
         </div>
-        <div class="scan-outline"></div>
+
+        <div class="w-10"></div> <!-- Spacer -->
+      </header>
+
+
+      <!-- ==================== SCREEN 1: CAMERA SCANNER ==================== -->
+      <div id="screen-scanner" class="flex-1 flex flex-col items-center px-4 pt-2 pb-6 justify-between transition-all duration-300">
+        
+        <!-- Viewport Camera Card -->
+        <div class="w-full max-w-[340px] flex flex-col items-center">
+          <div class="w-full h-[280px] bg-slate-950/80 rounded-2xl p-2 relative shadow-2xl border border-white/10 flex flex-col items-center justify-center overflow-hidden">
+            
+            <!-- Real Camera Feed -->
+            <video id="camera-feed" class="absolute inset-0 w-full h-full object-cover hidden" autoplay playsinline muted></video>
+
+            <!-- Video Simulation Fallback when camera is blocked or idle -->
+            <div id="simulated-feed" class="absolute inset-0 w-full h-full bg-slate-900 flex flex-col items-center justify-center overflow-hidden">
+              <div class="w-36 h-48 bg-slate-800/80 rounded-lg border border-slate-700 p-2 flex flex-col items-center justify-between shadow-inner relative animate-pulse">
+                <div class="w-full h-6 bg-amber-500/20 rounded flex items-center px-2">
+                  <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                </div>
+                <!-- Simulated QR -->
+                <div class="w-24 h-24 bg-white p-1 rounded shadow-md flex items-center justify-center">
+                  <div class="w-full h-full bg-slate-900 grid grid-cols-4 gap-1 p-1">
+                    <div class="bg-white col-span-2"></div>
+                    <div class="bg-white"></div>
+                    <div class="bg-transparent"></div>
+                    <div class="bg-white"></div>
+                    <div class="bg-white col-span-2"></div>
+                    <div class="bg-white"></div>
+                  </div>
+                </div>
+                <div class="w-full h-3 bg-slate-700 rounded"></div>
+              </div>
+            </div>
+
+            <!-- Scanner Frame Overlay -->
+            <div class="scanner-box w-full h-full flex flex-col items-center justify-center relative z-20">
+              <div class="laser-line"></div>
+
+              <!-- Corner Markers -->
+              <div class="absolute top-2 left-2 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg"></div>
+              <div class="absolute top-2 right-2 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg"></div>
+              <div class="absolute bottom-2 left-2 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg"></div>
+              <div class="absolute bottom-2 right-2 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg"></div>
+
+              <!-- Dynamic Scanning Status Banner -->
+              <div id="scan-status-banner" class="bg-black/75 backdrop-ios border border-white/10 px-5 py-2 rounded-full text-white font-bold text-sm tracking-wide pulse-badge text-center shadow-lg z-30">
+                Focalize o código QR
+              </div>
+
+              <!-- Flashlight Toggle -->
+              <button onclick="toggleFlashlight()" class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-slate-800/80 text-white flex items-center justify-center border border-white/20 active:scale-90 transition">
+                <i class="fa-solid fa-flashlight text-amber-300"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Info Icon -->
+          <button onclick="showInstructionsModal()" class="w-7 h-7 rounded-full bg-white/20 text-white text-xs flex items-center justify-center mt-3 active:scale-90">
+            <i class="fa-solid fa-info"></i>
+          </button>
+
+          <!-- Instructions Subtext -->
+          <p id="instruction-subtext" class="text-white/90 text-sm font-medium mt-3 text-center">
+            Afaste-se um pouco mais
+          </p>
+        </div>
+
+        <!-- Action Button (Parar / Autenticar) -->
+        <div class="w-full max-w-[340px] px-2">
+          <button id="btn-primary-action" onclick="handlePrimaryAction()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-base shadow-lg shadow-emerald-600/30 active:scale-[0.98] transition flex items-center justify-center gap-2">
+            <span>Parar</span>
+          </button>
+        </div>
       </div>
 
-      <p id="scanStatus" role="status">
-        A câmera ainda não foi ativada.
-      </p>
 
-      <button class="primary" id="cameraButton">
-        Ativar câmera
-      </button>
+      <!-- ==================== SCREEN 2: AUTHENTIC PRODUCT RESULT ==================== -->
+      <div id="screen-autentico" class="hidden flex-1 bg-slate-50 flex flex-col text-slate-900 transition-all duration-300">
+        
+        <!-- Indufar Product Top Header Bar -->
+        <div class="bg-white px-5 py-3 border-b border-slate-200 flex items-center justify-between shadow-sm">
+          <button onclick="toggleDrawer()" class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold border border-emerald-200">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
 
-      <label for="qrImage">Ou selecione uma imagem do QR Code:</label>
-      <input class="file-input" type="file" id="qrImage" accept="image/*">
+          <!-- Indufar Badge -->
+          <div class="flex flex-col items-center">
+            <div class="w-9 h-9 bg-amber-800 rounded-full flex items-center justify-center border border-amber-500 shadow-sm">
+              <span class="text-amber-300 font-black text-xs italic">IF</span>
+            </div>
+            <span class="text-[10px] font-bold tracking-wider text-slate-700 mt-0.5">INDUFAR</span>
+          </div>
 
-      <button class="secondary" id="backButton">
-        Voltar
-      </button>
-    </div>
-  </div>
-</section>
+          <!-- Language Selector -->
+          <button class="border border-slate-300 rounded-full px-2.5 py-1 text-xs font-bold text-slate-700 flex items-center gap-1">
+            POR <i class="fa-solid fa-chevron-up-down text-[10px]"></i>
+          </button>
+        </div>
 
-<!-- TELA 3: RESULTADO -->
-<section class="screen" id="result">
-  <div class="auth-banner">
-    <div class="shield" id="statusIcon">⛨</div>
-    <div class="auth-text">
-      <div class="auth-label" id="statusLabel">CÓDIGO RECONHECIDO</div>
-      <div class="auth-code">
-        CÓDIGO: <span id="productCode">aPYYGu1ho4</span>
+        <!-- Scrollable Product Content -->
+        <div class="flex-1 overflow-y-auto px-5 py-4 flex flex-col items-center">
+          
+          <!-- Title -->
+          <h1 class="text-xl font-black text-slate-900 tracking-tight text-center mb-3">
+            T.G. 15 mg
+          </h1>
+
+          <!-- Authenticity Banner -->
+          <div class="w-full bg-slate-100 rounded-2xl p-3 border border-slate-200 flex items-center justify-between mb-4 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 bg-blue-900 rounded-full flex items-center justify-center border-2 border-emerald-400 text-emerald-400 text-xl shadow">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-emerald-600 font-extrabold text-lg leading-tight uppercase tracking-wide">AUTÊNTICO</span>
+                <div class="flex items-center gap-1">
+                  <span class="text-slate-900 font-black text-sm tracking-tight">CÓDIGO:</span>
+                  <span id="product-code-display" class="text-slate-900 font-black text-sm tracking-tight">aPYYGu1ho4</span>
+                </div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-400 text-lg"></i>
+          </div>
+
+          <!-- Product Image Box Mockup -->
+          <div class="w-full bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-inner mb-4 border border-slate-200">
+            <div class="relative w-52 h-52 flex items-center justify-center">
+              
+              <!-- 3D Box Mockup representation -->
+              <div class="w-48 h-44 bg-white rounded-lg shadow-xl border border-slate-300 flex flex-col justify-between overflow-hidden relative transform -rotate-1">
+                <div class="bg-amber-800 text-amber-200 px-3 py-1 text-[10px] font-bold flex justify-between items-center">
+                  <span>FORMULA</span>
+                  <span>15 mg</span>
+                </div>
+                <div class="p-3 flex flex-col items-center text-center">
+                  <span class="text-2xl font-black text-slate-800 tracking-tighter">..G.15</span>
+                  <div class="w-full bg-amber-700 text-white font-bold text-xs py-1 mt-1 rounded">
+                    Tirzepatida
+                  </div>
+                  <span class="text-[10px] font-semibold text-amber-800 mt-0.5">15 mg/0,5mL</span>
+                </div>
+                <div class="bg-slate-100 p-1.5 text-[8px] text-slate-500 font-medium border-t border-slate-200">
+                  4 frascos viales con 0,5 mL
+                </div>
+              </div>
+
+              <!-- Video Play Overlay Button -->
+              <button onclick="playProductVideo()" class="absolute inset-0 m-auto w-12 h-12 bg-slate-900/60 hover:bg-slate-900/80 rounded-full flex items-center justify-center text-white text-lg shadow-xl backdrop-blur-sm active:scale-90 transition">
+                <i class="fa-solid fa-play ml-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Match Description Text -->
+          <p class="text-slate-700 text-xs font-medium text-left leading-relaxed mb-4">
+            O código alfanumérico acima deve corresponder em código e cor ao que está impresso no rótulo do produto para verificar sua autenticidade.
+          </p>
+
+          <div class="w-full text-left font-bold text-sm text-slate-800 mb-6">
+            15 mg
+          </div>
+
+          <!-- Bottom Icon Buttons -->
+          <div class="flex justify-center items-center gap-6 mt-2 mb-4">
+            <button class="w-14 h-14 bg-amber-700 text-amber-200 rounded-full flex items-center justify-center text-2xl shadow-md border-2 border-amber-500 active:scale-95">
+              <i class="fa-solid fa-shield"></i>
+            </button>
+            <button class="w-14 h-14 bg-amber-700 text-amber-200 rounded-full flex items-center justify-center text-2xl shadow-md border-2 border-amber-500 active:scale-95">
+              <i class="fa-solid fa-file-lines"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div> <!-- End Main Container -->
+
+
+    <!-- ==================== MODAL 1: LOCATION PERMISSION ==================== -->
+    <div id="modal-location" class="absolute inset-0 bg-black/60 backdrop-ios z-50 flex items-center justify-center p-5 transition-all">
+      <div class="bg-white w-full max-w-xs rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl animate-fade-in">
+        
+        <!-- Paper Plane Blue Icon -->
+        <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-500/40 mb-4">
+          <i class="fa-solid fa-paper-plane -translate-x-0.5 translate-y-0.5"></i>
+        </div>
+
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+          Ajude a Combater a Falsificação
+        </h3>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-6">
+          Compartilhe sua localização para nos ajudar a verificar a autenticidade do produto. Seus dados de localização nos permitem distinguir produtos genuínos de falsificações com base na distribuição geográfica.
+        </p>
+
+        <button onclick="handleLocationGrant()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md active:scale-95 transition">
+          Continuar
+        </button>
       </div>
     </div>
-    <div class="arrow">›</div>
-  </div>
 
-  <div class="result-body">
-    <img
-      class="product-image"
-      src="assets/produto-referencia.jpg"
-      alt="Embalagem de referência do produto T.G. 15 mg"
-    >
 
-    <p class="description" id="resultDescription">
-      O código foi identificado. A confirmação de autenticidade foi validada com sucesso.
-    </p>
+    <!-- ==================== MODAL 2: LOCATION DENIED ==================== -->
+    <div id="modal-location-denied" class="hidden absolute inset-0 bg-black/60 backdrop-ios z-50 flex items-center justify-center p-5">
+      <div class="bg-white w-full max-w-xs rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl">
+        
+        <!-- Orange Star Icon -->
+        <div class="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg shadow-amber-500/40 mb-4">
+          <i class="fa-solid fa-star"></i>
+        </div>
 
-    <div class="dosage">15 mg</div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+          Acesso à Localização Negado
+        </h3>
 
-    <div class="feature-icons">
-      <div class="feature-icon" aria-label="Informações do produto">♧</div>
-      <div class="feature-icon" aria-label="Certificação">▤</div>
+        <p class="text-xs text-slate-600 leading-relaxed mb-6">
+          Você ainda pode continuar sem compartilhar sua localização, embora isso possa limitar nossa capacidade de verificar a autenticidade do produto.
+        </p>
+
+        <button onclick="dismissLocationDenied()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md mb-2 active:scale-95 transition">
+          Continuar sem localização
+        </button>
+
+        <button onclick="dismissLocationDenied()" class="w-full py-2.5 text-blue-600 font-semibold text-xs active:opacity-70">
+          Abrir Ajustes
+        </button>
+      </div>
     </div>
 
-    <div class="notice">
-      Para confirmar a autenticidade, consulte o resultado
-      validado pelo sistema oficial da fabricante.
+
+    <!-- ==================== MODAL 3: INSTRUCTIONS & PRIVACY CHECKBOX ==================== -->
+    <div id="modal-instructions" class="hidden absolute inset-0 bg-black/70 backdrop-ios z-50 flex items-center justify-center p-5">
+      <div class="bg-white w-full max-w-sm rounded-3xl p-5 flex flex-col text-slate-900 shadow-2xl">
+        
+        <!-- Step 1 -->
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-7 h-7 bg-indigo-900 text-white font-bold rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">
+            1
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900">Escaneie seu produto</h4>
+            <p class="text-xs text-slate-500">Escaneie o código QR</p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-7 h-7 bg-indigo-900 text-white font-bold rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">
+            2
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900">Procure boa iluminação</h4>
+            <p class="text-xs text-slate-500">Certifique-se de estar em um lugar bem iluminado</p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex items-start gap-3 mb-5">
+          <div class="w-7 h-7 bg-indigo-900 text-white font-bold rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5">
+            3
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900">Ajuste a distância</h4>
+            <p class="text-xs text-slate-500">Aproxime-se e afaste-se conforme as instruções</p>
+          </div>
+        </div>
+
+        <!-- Terms Checkbox -->
+        <label class="flex items-start gap-2.5 mb-5 cursor-pointer select-none">
+          <input type="checkbox" id="privacy-check" checked onchange="toggleAuthButton()" class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+          <span class="text-[11px] text-slate-600 leading-tight">
+            Concordo com a <a href="#" class="text-indigo-600 font-semibold underline">Política de Privacidade</a> (uso da câmera e localização para validação de QR).
+          </span>
+        </label>
+
+        <!-- Progress Loader Bar -->
+        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-4 overflow-hidden">
+          <div id="loader-progress-bar" class="bg-indigo-600 h-full w-[79%] transition-all duration-300"></div>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="btn-autenticar" onclick="confirmInstructions()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md active:scale-95 transition">
+          Autenticar
+        </button>
+      </div>
     </div>
 
-    <button class="primary" id="againButton">
-      Verificar outro produto
-    </button>
+
+    <!-- ==================== MODAL 4: CAMERA PERMISSION DIALOG ==================== -->
+    <div id="modal-camera-prompt" class="hidden absolute inset-0 bg-black/50 backdrop-ios z-50 flex items-center justify-center p-6">
+      <div class="bg-slate-900/90 border border-slate-700 text-white w-full max-w-xs rounded-2xl p-5 flex flex-col items-center text-center shadow-2xl">
+        <h3 class="text-sm font-bold mb-2">
+          "AuthNow" Deseja Ter Acesso à Câmera
+        </h3>
+        <p class="text-xs text-slate-300 mb-5">
+          Precisamos de acesso à câmera para autenticar códigos QR.
+        </p>
+        <div class="w-full grid grid-cols-2 gap-2 border-t border-slate-800 pt-3">
+          <button onclick="denyCameraAccess()" class="py-2 text-xs font-semibold text-blue-400 active:opacity-70">
+            Não Permitir
+          </button>
+          <button onclick="grantCameraAccess()" class="py-2 text-xs font-bold text-blue-400 border-l border-slate-800 active:opacity-70">
+            Permitir
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================== MODAL 5: SCAN ERROR / MAX ATTEMPTS ==================== -->
+    <div id="modal-scan-error" class="hidden absolute inset-0 bg-black/70 backdrop-ios z-50 flex items-center justify-center p-5">
+      <div class="bg-slate-900 border border-red-500/30 text-white w-full max-w-xs rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl">
+        
+        <!-- Red Close Circle -->
+        <div class="w-14 h-14 bg-red-600/20 rounded-full flex items-center justify-center text-red-500 border border-red-500/40 text-2xl mb-4">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+
+        <h3 class="text-lg font-bold text-red-500 mb-1">
+          Falha na autenticação!
+        </h3>
+
+        <p class="text-sm font-semibold text-slate-300 mb-4">
+          Número máximo de tentativas
+        </p>
+
+        <!-- Red Line Indicator -->
+        <div class="w-full h-1 bg-red-600 rounded-full mb-6"></div>
+
+        <p class="text-xs text-slate-400 mb-6">
+          Não foi possível verificar seu produto
+        </p>
+
+        <button onclick="dismissScanError()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs border border-slate-700 active:scale-95 transition">
+          Tentar novamente
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ==================== LATERAL DRAWER MENU ==================== -->
+    <div id="drawer-overlay" onclick="toggleDrawer()" class="hidden absolute inset-0 bg-black/60 z-50 transition-opacity"></div>
+    
+    <div id="side-drawer" class="drawer drawer-closed absolute top-0 left-0 w-3/4 h-full bg-slate-900 text-white z-50 p-6 flex flex-col justify-between shadow-2xl border-r border-slate-800">
+      <div>
+        <!-- Menu Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="font-extrabold text-lg tracking-tight">auth<span class="text-blue-400">now</span></span>
+          </div>
+          <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-4">
+          <a href="#" onclick="toggleDrawer(); showScannerScreen();" class="flex items-center gap-3 text-sm font-medium text-slate-200 hover:text-white py-2">
+            <i class="fa-solid fa-qrcode w-5 text-indigo-400"></i>
+            <span>Validar novo produto</span>
+          </a>
+          <a href="#" onclick="toggleDrawer(); showAutenticoScreen();" class="flex items-center gap-3 text-sm font-medium text-slate-200 hover:text-white py-2">
+            <i class="fa-solid fa-star w-5 text-amber-400"></i>
+            <span>Meus pontos</span>
+          </a>
+
+          <div class="pt-4 border-t border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">APP</span>
+            <div class="mt-2 space-y-3">
+              <a href="#" class="flex items-center gap-3 text-xs text-slate-300 hover:text-white py-1">
+                <i class="fa-solid fa-circle-question w-5 text-slate-400"></i>
+                <span>Como usar</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 text-xs text-slate-300 hover:text-white py-1">
+                <i class="fa-solid fa-comment-dots w-5 text-slate-400"></i>
+                <span>Fale conosco</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 text-xs text-slate-300 hover:text-white py-1">
+                <i class="fa-solid fa-bullhorn w-5 text-slate-400"></i>
+                <span>Denúncia</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">SOBRE</span>
+            <div class="mt-2 space-y-3">
+              <a href="#" class="flex items-center gap-3 text-xs text-slate-300 hover:text-white py-1">
+                <i class="fa-solid fa-gavel w-5 text-slate-400"></i>
+                <span>Legal</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 text-xs text-slate-300 hover:text-white py-1">
+                <i class="fa-solid fa-key w-5 text-slate-400"></i>
+                <span>Licenças</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <div class="text-[10px] text-slate-600">
+        AuthNow Verification System v2.4
+      </div>
+    </div>
+
   </div>
-</section>
 
-<footer>
-  INDUFAR
-</footer>
-</main>
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    // App State Management
+    let scanAttempt = 0;
+    let cameraStream = null;
+    let scanInterval = null;
+    let isScanning = false;
 
-<script>
-const $ = id => document.getElementById(id);
+    const statusTexts = [
+      "Focalize o código QR",
+      "Afaste-se lentamente",
+      "Analisando QR",
+      "Mantenha firme",
+      "Aproxime-se a pouco mais",
+      "Analisando QR"
+    ];
 
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(screen => {
-    screen.classList.toggle("active", screen.id === id);
-  });
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-$("accept").addEventListener("change", event => {
-  $("continueButton").disabled = !event.target.checked;
-});
-
-$("continueButton").addEventListener("click", () => {
-  showScreen("scanner");
-});
-
-$("backButton").addEventListener("click", () => {
-  stopCamera();
-  showScreen("instructions");
-});
-
-$("menuButton").addEventListener("click", () => {
-  showScreen("instructions");
-});
-
-$("againButton").addEventListener("click", () => {
-  stopCamera();
-  showScreen("scanner");
-});
-
-let cameraStream = null;
-let detector = null;
-let scanning = false;
-
-async function startCamera() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    $("scanStatus").textContent =
-      "Câmera indisponível. Abra o site em HTTPS ou localhost.";
-    return;
-  }
-
-  try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
-      audio: false
-    });
-
-    const video = document.createElement("video");
-    video.autoplay = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.srcObject = cameraStream;
-
-    $("scanBox").prepend(video);
-    $("scanHelp").style.display = "none";
-
-    await video.play();
-
-    if (!("BarcodeDetector" in window)) {
-      $("scanStatus").textContent =
-        "Câmera ativa. Este navegador não oferece leitura automática de QR.";
-      return;
+    // Clock display
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('current-time').textContent = `${hours}:${minutes}`;
     }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    detector = new BarcodeDetector({ formats: ["qr_code"] });
-    scanning = true;
-    $("scanStatus").textContent = "Procurando QR Code...";
-    scanLoop(video);
-  } catch (error) {
-    $("scanStatus").textContent =
-      "Não foi possível abrir a câmera. Verifique as permissões do navegador.";
-  }
-}
-
-async function scanLoop(video) {
-  if (!scanning || !detector) return;
-
-  try {
-    const codes = await detector.detect(video);
-
-    if (codes.length > 0) {
-      const code = (codes[0].rawValue || "").trim();
+    // Reset whole application
+    function resetFlow() {
       stopCamera();
-      showResult(code);
-      return;
+      document.getElementById('modal-location').classList.remove('hidden');
+      document.getElementById('modal-location-denied').classList.add('hidden');
+      document.getElementById('modal-instructions').classList.add('hidden');
+      document.getElementById('modal-camera-prompt').classList.add('hidden');
+      document.getElementById('modal-scan-error').classList.add('hidden');
+      showScannerScreen();
+      scanAttempt = 0;
     }
-  } catch (error) {
-    // Aguarda o próximo quadro da câmera.
-  }
 
-  requestAnimationFrame(() => scanLoop(video));
-}
-
-function stopCamera() {
-  scanning = false;
-
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(track => track.stop());
-    cameraStream = null;
-  }
-
-  const video = $("scanBox").querySelector("video");
-  if (video) video.remove();
-
-  $("scanHelp").style.display = "block";
-}
-
-$("cameraButton").addEventListener("click", startCamera);
-
-$("qrImage").addEventListener("change", async event => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-
-  if (!("BarcodeDetector" in window)) {
-    $("scanStatus").textContent =
-      "A leitura de imagens não é suportada neste navegador.";
-    return;
-  }
-
-  try {
-    const bitmap = await createImageBitmap(file);
-    const imageDetector = new BarcodeDetector({
-      formats: ["qr_code"]
-    });
-    const codes = await imageDetector.detect(bitmap);
-    bitmap.close();
-
-    if (codes.length) {
-      showResult((codes[0].rawValue || "").trim());
-    } else {
-      $("scanStatus").textContent =
-        "Não foi possível identificar um QR Code nessa imagem.";
+    // Modal Step 1 -> Step 2
+    function handleLocationGrant() {
+      document.getElementById('modal-location').classList.add('hidden');
+      document.getElementById('modal-location-denied').classList.remove('hidden');
     }
-  } catch (error) {
-    $("scanStatus").textContent =
-      "Erro ao ler a imagem. Tente uma foto mais nítida.";
-  }
 
-  event.target.value = "";
-});
+    function dismissLocationDenied() {
+      document.getElementById('modal-location-denied').classList.add('hidden');
+      document.getElementById('modal-instructions').classList.remove('hidden');
+      simulateLoaderProgress();
+    }
 
-function showResult(code) {
-  $("productCode").textContent = code || "Não identificado";
+    // Progress Bar Animation
+    function simulateLoaderProgress() {
+      const bar = document.getElementById('loader-progress-bar');
+      let val = 10;
+      bar.style.width = '10%';
+      const timer = setInterval(() => {
+        val += 15;
+        bar.style.width = val + '%';
+        if (val >= 100) {
+          clearInterval(timer);
+        }
+      }, 150);
+    }
 
-  /*
-   * Declarar autenticidade somente pela leitura do QR CODE do Produto.
-   * A confirmação deve vir somente deste site oficial.
-   */
-  $("statusIcon").textContent = "⛨";
-  $("statusLabel").textContent = "CÓDIGO LIDO";
-  $("statusLabel").style.color = "#16832d";
+    function toggleAuthButton() {
+      const checked = document.getElementById('privacy-check').checked;
+      const btn = document.getElementById('btn-autenticar');
+      if (checked) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
 
-  $("resultDescription").textContent =
-    "O QR Code foi lido. Confirmamos a autenticidade do produto, " +
-    "obrigado por consultar o nosso sistema.";
+    function confirmInstructions() {
+      document.getElementById('modal-instructions').classList.add('hidden');
+      document.getElementById('modal-camera-prompt').classList.remove('hidden');
+    }
 
-  showScreen("result");
-}
+    // Camera Access Handlers
+    function denyCameraAccess() {
+      document.getElementById('modal-camera-prompt').classList.add('hidden');
+      startScanningSimulation();
+    }
 
-window.addEventListener("pagehide", stopCamera);
-</script>
+    async function grantCameraAccess() {
+      document.getElementById('modal-camera-prompt').classList.add('hidden');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        cameraStream = stream;
+        const video = document.getElementById('camera-feed');
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        document.getElementById('simulated-feed').classList.add('hidden');
+      } catch (err) {
+        console.warn("Camera fallback activated:", err);
+      }
+      startScanningSimulation();
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      const video = document.getElementById('camera-feed');
+      video.classList.add('hidden');
+      document.getElementById('simulated-feed').classList.remove('hidden');
+    }
+
+    // Start Scanner Animation and Dynamic Status
+    function startScanningSimulation() {
+      isScanning = true;
+      let idx = 0;
+      const banner = document.getElementById('scan-status-banner');
+      const subtext = document.getElementById('instruction-subtext');
+
+      if (scanInterval) clearInterval(scanInterval);
+
+      scanInterval = setInterval(() => {
+        idx = (idx + 1) % statusTexts.length;
+        banner.textContent = statusTexts[idx];
+        subtext.textContent = statusTexts[(idx + 1) % statusTexts.length];
+
+        scanAttempt++;
+
+        // Trigger max attempts failure or success dynamically
+        if (scanAttempt === 8) {
+          showScanErrorModal();
+        }
+      }, 2500);
+    }
+
+    function showScanErrorModal() {
+      clearInterval(scanInterval);
+      document.getElementById('modal-scan-error').classList.remove('hidden');
+    }
+
+    function dismissScanError() {
+      document.getElementById('modal-scan-error').classList.add('hidden');
+      showAutenticoScreen();
+    }
+
+    function handlePrimaryAction() {
+      if (isScanning) {
+        showAutenticoScreen();
+      } else {
+        startScanningSimulation();
+      }
+    }
+
+    // Navigation Screens
+    function showAutenticoScreen() {
+      clearInterval(scanInterval);
+      document.getElementById('screen-scanner').classList.add('hidden');
+      document.getElementById('screen-autentico').classList.remove('hidden');
+      document.getElementById('app-header').classList.add('hidden');
+    }
+
+    function showScannerScreen() {
+      document.getElementById('screen-autentico').classList.add('hidden');
+      document.getElementById('screen-scanner').classList.remove('hidden');
+      document.getElementById('app-header').classList.remove('hidden');
+    }
+
+    function showInstructionsModal() {
+      document.getElementById('modal-instructions').classList.remove('hidden');
+    }
+
+    function toggleFlashlight() {
+      alert("Lanterna ativada / desativada");
+    }
+
+    function playProductVideo() {
+      alert("Reproduzindo vídeo de validação do produto T.G. 15 mg");
+    }
+
+    // Drawer Menu Toggle
+    function toggleDrawer() {
+      const drawer = document.getElementById('side-drawer');
+      const overlay = document.getElementById('drawer-overlay');
+
+      if (drawer.classList.contains('drawer-closed')) {
+        drawer.classList.remove('drawer-closed');
+        drawer.classList.add('drawer-open');
+        overlay.classList.remove('hidden');
+      } else {
+        drawer.classList.remove('drawer-open');
+        drawer.classList.add('drawer-closed');
+        overlay.classList.add('hidden');
+      }
+    }
+  </script>
 </body>
 </html>
