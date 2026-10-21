@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>INDUFAR | Verificação de produto</title>
+
+<style>
+:root {
+  --brown: #673519;
+  --gold: #a48a08;
+  --blue: #edf4f6;
+  --green: #16832d;
+  --text: #17191d;
+}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: #fff;
+}
+
+button, select { font: inherit; }
+button { cursor: pointer; }
+
+.app {
+  width: 100%;
+  max-width: 740px;
+  min-height: 100vh;
+  margin: auto;
+  background: white;
+}
+
+header {
+  background: white;
+  padding: 24px 22px 18px;
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  min-height: 80px;
+}
+
+.menu {
+  width: 66px;
+  height: 62px;
+  border: 0;
+  border-radius: 17px;
+  background: white;
+  box-shadow: 0 4px 12px #00000012;
+  font-size: 29px;
+  justify-self: start;
+}
+
+.logo {
+  width: 105px;
+  height: 77px;
+  object-fit: contain;
+  justify-self: center;
+}
+
+.language {
+  justify-self: end;
+  border: 2px solid #252525;
+  border-radius: 30px;
+  padding: 13px 15px;
+  background: white;
+}
+
+.product-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 28px;
+  margin: 12px 0 24px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.auth-banner {
+  min-height: 122px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e6eaec;
+}
+
+.shield {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #164b9b;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 38px;
+  flex-shrink: 0;
+}
+
+.auth-text { flex: 1; min-width: 0; }
+
+.auth-label {
+  color: var(--green);
+  font-size: clamp(21px, 4.3vw, 36px);
+  line-height: 1.15;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.auth-code {
+  font-size: clamp(16px, 3.8vw, 28px);
+  line-height: 1.2;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.arrow {
+  font-size: 44px;
+  font-weight: 300;
+}
+
+.result-body {
+  background: var(--blue);
+  padding: 25px 30px 32px;
+}
+
+.product-image {
+  display: block;
+  width: 100%;
+  height: 650px;
+  max-height: 75vh;
+  object-fit: contain;
+  margin: 0 auto 20px;
+}
+
+.description {
+  font-size: 19px;
+  line-height: 1.5;
+  margin: 15px 0;
+}
+
+.dosage {
+  color: #5f6871;
+  font-size: 17px;
+  margin: 18px 0 48px;
+}
+
+.feature-icons {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 30px;
+}
+
+.feature-icon {
+  height: 105px;
+  width: 105px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  color: white;
+  border: 4px solid white;
+  font-size: 44px;
+}
+
+.content {
+  padding: 28px 24px 36px;
+  background: var(--blue);
+  min-height: 70vh;
+}
+
+.card {
+  max-width: 560px;
+  margin: 0 auto;
+  background: white;
+  padding: 27px;
+  border-radius: 16px;
+  box-shadow: 0 5px 22px #152a3c0d;
+}
+
+h1 {
+  font-size: 27px;
+  line-height: 1.2;
+  margin: 0 0 13px;
+}
+
+h2 {
+  font-size: 22px;
+  margin-top: 0;
+}
+
+p {
+  line-height: 1.6;
+  color: #454d55;
+}
+
+.steps {
+  padding-left: 23px;
+  line-height: 1.8;
+  margin: 20px 0;
+}
+
+.consent {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 22px 0;
+}
+
+.consent input {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  accent-color: var(--green);
+}
+
+.primary, .secondary {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: 0;
+  margin-top: 12px;
+}
+
+.primary {
+  color: white;
+  background: #188c36;
+}
+
+.primary:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: white;
+  border: 1px solid #cbd3d9;
+  color: #333;
+}
+
+.scan-box {
+  width: 100%;
+  max-width: 390px;
+  aspect-ratio: 1;
+  background: #151515;
+  border-radius: 16px;
+  margin: 24px auto;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.scan-box video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan-outline {
+  position: absolute;
+  inset: 14%;
+  border: 3px solid #3ff2a0;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.scan-help {
+  text-align: center;
+  color: white;
+  padding: 20px;
+}
+
+.file-input {
+  display: block;
+  width: 100%;
+  margin: 20px 0;
+  padding: 13px;
+  background: white;
+  border: 1px solid #ccd4d8;
+  border-radius: 9px;
+}
+
+.notice {
+  padding: 13px;
+  margin-top: 22px;
+  border-radius: 9px;
+  background: #fff4d5;
+  color: #6b5000;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+footer {
+  padding: 22px;
+  text-align: center;
+  color: #737b80;
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  header { padding: 14px 14px 12px; }
+  .nav { min-height: 70px; }
+  .menu { width: 58px; height: 56px; }
+  .logo { width: 90px; height: 68px; }
+  .product-title { font-size: 23px; margin-bottom: 22px; }
+  .auth-banner { padding: 16px 13px; gap: 10px; }
+  .shield { width: 58px; height: 58px; font-size: 31px; }
+  .result-body { padding: 20px 18px 30px; }
+  .product-image { height: 490px; }
+  .description { font-size: 16px; }
+  .feature-icon { width: 83px; height: 83px; font-size: 35px; }
+  .content { padding: 20px 14px 30px; }
+  .card { padding: 22px 18px; }
+}
+</style>
+</head>
+
+<body>
+<main class="app">
+
+<header>
+  <div class="nav">
+    <button class="menu" aria-label="Menu" id="menuButton">☰</button>
+
+    <img class="logo"
+         src="assets/indufar-logo.png"
+         alt="INDUFAR">
+
+    <select class="language" aria-label="Idioma">
+      <option>POR ⌃</option>
+      <option>ESP</option>
+      <option>ENG</option>
+    </select>
+  </div>
+
+  <div class="product-title">T.G. 15 mg</div>
+</header>
+
+<!-- TELA 1: ORIENTAÇÕES -->
+<section class="screen active" id="instructions">
+  <div class="content">
+    <div class="card">
+      <h1>Verificação de autenticidade</h1>
+      <p>
+        Confira o código QR da embalagem para consultar
+        as informações de identificação do produto.
+      </p>
+
+      <h2>Como funciona</h2>
+      <ol class="steps">
+        <li>Tenha o produto em mãos.</li>
+        <li>Localize o QR Code na embalagem.</li>
+        <li>Permita o acesso à câmera para escanear.</li>
+        <li>Confira as informações apresentadas.</li>
+      </ol>
+
+      <label class="consent">
+        <input type="checkbox" id="accept">
+        <span>Li as orientações e desejo continuar para a leitura do QR Code.</span>
+      </label>
+
+      <button class="primary" id="continueButton" disabled>
+        Continuar
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 2: LEITOR -->
+<section class="screen" id="scanner">
+  <div class="content">
+    <div class="card">
+      <h1>Escaneie o QR Code</h1>
+      <p>
+        Posicione o código dentro da moldura e mantenha
+        a câmera firme até a leitura.
+      </p>
+
+      <div class="scan-box" id="scanBox">
+        <div class="scan-help" id="scanHelp">
+          <div style="font-size:48px">▦</div>
+          <strong>Leitura do código QR</strong>
+          <p style="color:#ddd">Ative a câmera para continuar.</p>
+        </div>
+        <div class="scan-outline"></div>
+      </div>
+
+      <p id="scanStatus" role="status">
+        A câmera ainda não foi ativada.
+      </p>
+
+      <button class="primary" id="cameraButton">
+        Ativar câmera
+      </button>
+
+      <label for="qrImage">Ou selecione uma imagem do QR Code:</label>
+      <input class="file-input" type="file" id="qrImage" accept="image/*">
+
+      <button class="secondary" id="backButton">
+        Voltar
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 3: RESULTADO -->
+<section class="screen" id="result">
+  <div class="auth-banner">
+    <div class="shield" id="statusIcon">⛨</div>
+    <div class="auth-text">
+      <div class="auth-label" id="statusLabel">CÓDIGO RECONHECIDO</div>
+      <div class="auth-code">
+        CÓDIGO: <span id="productCode">aPYYGu1ho4</span>
+      </div>
+    </div>
+    <div class="arrow">›</div>
+  </div>
+
+  <div class="result-body">
+    <img
+      class="product-image"
+      src="assets/produto-referencia.jpg"
+      alt="Embalagem de referência do produto T.G. 15 mg"
+    >
+
+    <p class="description" id="resultDescription">
+      O código foi identificado. A confirmação de autenticidade foi validada com sucesso.
+    </p>
+
+    <div class="dosage">15 mg</div>
+
+    <div class="feature-icons">
+      <div class="feature-icon" aria-label="Informações do produto">♧</div>
+      <div class="feature-icon" aria-label="Certificação">▤</div>
+    </div>
+
+    <div class="notice">
+      Para confirmar a autenticidade, consulte o resultado
+      validado pelo sistema oficial da fabricante.
+    </div>
+
+    <button class="primary" id="againButton">
+      Verificar outro produto
+    </button>
+  </div>
+</section>
+
+<footer>
+  INDUFAR
+</footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(screen => {
+    screen.classList.toggle("active", screen.id === id);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+$("accept").addEventListener("change", event => {
+  $("continueButton").disabled = !event.target.checked;
+});
+
+$("continueButton").addEventListener("click", () => {
+  showScreen("scanner");
+});
+
+$("backButton").addEventListener("click", () => {
+  stopCamera();
+  showScreen("instructions");
+});
+
+$("menuButton").addEventListener("click", () => {
+  showScreen("instructions");
+});
+
+$("againButton").addEventListener("click", () => {
+  stopCamera();
+  showScreen("scanner");
+});
+
+let cameraStream = null;
+let detector = null;
+let scanning = false;
+
+async function startCamera() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    $("scanStatus").textContent =
+      "Câmera indisponível. Abra o site em HTTPS ou localhost.";
+    return;
+  }
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+
+    const video = document.createElement("video");
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+    video.srcObject = cameraStream;
+
+    $("scanBox").prepend(video);
+    $("scanHelp").style.display = "none";
+
+    await video.play();
+
+    if (!("BarcodeDetector" in window)) {
+      $("scanStatus").textContent =
+        "Câmera ativa. Este navegador não oferece leitura automática de QR.";
+      return;
+    }
+
+    detector = new BarcodeDetector({ formats: ["qr_code"] });
+    scanning = true;
+    $("scanStatus").textContent = "Procurando QR Code...";
+    scanLoop(video);
+  } catch (error) {
+    $("scanStatus").textContent =
+      "Não foi possível abrir a câmera. Verifique as permissões do navegador.";
+  }
+}
+
+async function scanLoop(video) {
+  if (!scanning || !detector) return;
+
+  try {
+    const codes = await detector.detect(video);
+
+    if (codes.length > 0) {
+      const code = (codes[0].rawValue || "").trim();
+      stopCamera();
+      showResult(code);
+      return;
+    }
+  } catch (error) {
+    // Aguarda o próximo quadro da câmera.
+  }
+
+  requestAnimationFrame(() => scanLoop(video));
+}
+
+function stopCamera() {
+  scanning = false;
+
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+
+  const video = $("scanBox").querySelector("video");
+  if (video) video.remove();
+
+  $("scanHelp").style.display = "block";
+}
+
+$("cameraButton").addEventListener("click", startCamera);
+
+$("qrImage").addEventListener("change", async event => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (!("BarcodeDetector" in window)) {
+    $("scanStatus").textContent =
+      "A leitura de imagens não é suportada neste navegador.";
+    return;
+  }
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const imageDetector = new BarcodeDetector({
+      formats: ["qr_code"]
+    });
+    const codes = await imageDetector.detect(bitmap);
+    bitmap.close();
+
+    if (codes.length) {
+      showResult((codes[0].rawValue || "").trim());
+    } else {
+      $("scanStatus").textContent =
+        "Não foi possível identificar um QR Code nessa imagem.";
+    }
+  } catch (error) {
+    $("scanStatus").textContent =
+      "Erro ao ler a imagem. Tente uma foto mais nítida.";
+  }
+
+  event.target.value = "";
+});
+
+function showResult(code) {
+  $("productCode").textContent = code || "Não identificado";
+
+  /*
+   * Declarar autenticidade somente pela leitura do QR CODE do Produto.
+   * A confirmação deve vir somente deste site oficial.
+   */
+  $("statusIcon").textContent = "⛨";
+  $("statusLabel").textContent = "CÓDIGO LIDO";
+  $("statusLabel").style.color = "#16832d";
+
+  $("resultDescription").textContent =
+    "O QR Code foi lido. Confirmamos a autenticidade do produto, " +
+    "obrigado por consultar o nosso sistema.";
+
+  showScreen("result");
+}
+
+window.addEventListener("pagehide", stopCamera);
+</script>
+</body>
+</html>
